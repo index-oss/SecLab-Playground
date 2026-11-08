@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Surfacemap</title>
+<link rel="icon" type="image/png" href="/assets/avatar.png">
+<link rel="apple-touch-icon" href="/assets/avatar.png">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('ghgrid_theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eaf6f3;--bg2:#fdf3dc;--ink:#14323a;--mute:#4d6b72;--card:rgba(255,255,255,.72);--line:rgba(20,50,58,.14);--acc:#0e7a69;--acc-ink:#fff;--sun:#ffb84d;--lav:#8f86e8;--red:#c4003a;--amber:#a85f00;--blue:#2457d6;--green:#0e7a69;--purple:#6b4fd0;--text:var(--ink);--muted:var(--mute);--d:'Fraunces',Georgia,serif;--b:'Nunito','Segoe UI',system-ui,sans-serif;color-scheme:light}
+[data-theme=dark]{--bg:#1b2766;--bg2:#4a3b9b;--ink:#f4f5ff;--mute:#c9d0f8;--card:rgba(255,255,255,.1);--line:rgba(255,255,255,.22);--acc:#ffd27a;--acc-ink:#241c00;--red:#ff8aa8;--amber:#ffd27a;--blue:#9db2ff;--green:#7dffc4;--purple:#c0b8ff;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--b)}
+body{background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--ink);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+[data-theme=dark] body{background-image:radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 120px 120px,#fff,transparent),radial-gradient(2px 2px at 160px 60px,#dfe6ff,transparent),linear-gradient(160deg,var(--bg),var(--bg2));background-size:200px 200px,200px 200px,200px 200px,auto}
+body::before,body::after{content:'';position:fixed;border-radius:50%;filter:blur(70px);opacity:.4;pointer-events:none;z-index:-1;animation:drift 18s ease-in-out infinite alternate}
+body::before{width:340px;height:340px;background:var(--sun);top:8%;left:-6%}body::after{width:400px;height:400px;background:var(--lav);bottom:5%;right:-8%;animation-delay:-8s}
+@keyframes drift{to{transform:translate(50px,-40px) scale(1.1)}}@keyframes flow{to{stroke-dashoffset:-12}}
+header{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;background:color-mix(in srgb,var(--bg) 60%,transparent);backdrop-filter:blur(12px)}
+.lg{font:800 1.3rem var(--d);color:var(--ink);text-decoration:none}.lg i{color:var(--acc);font-style:normal}
+.hr{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--mute)}
+h2{font:800 1.7rem/1.1 var(--d);letter-spacing:-.02em}
+button{padding:.65rem 1.2rem;background:var(--acc);color:var(--acc-ink);border:2px solid var(--acc);border-radius:99px;font:800 .9rem var(--b);cursor:pointer;transition:transform .25s,opacity .2s}
+button:hover{transform:translateY(-2px)}button:disabled{opacity:.5;cursor:wait}
+.ib,.ghost,.fb{background:var(--card);color:var(--ink);border-color:var(--line);padding:.4rem 1rem;font-size:.82rem}
+.ib:hover,.ghost:hover,.fb:hover{border-color:var(--acc)}.row{display:flex;gap:8px}.row button{flex:1}
+.fb.on,.ib[aria-pressed=true]{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.orb{width:38px;height:38px;padding:0;border:0;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffb84d 55%,#ff8a5c);box-shadow:0 0 22px 3px rgba(255,184,77,.55)}
+[data-theme=dark] .orb{background:radial-gradient(circle at 30% 36%,#fff,#eceefa 55%,#b4b9dc);box-shadow:0 0 22px 5px rgba(200,212,255,.55)}
+input,select,textarea{width:100%;padding:.7rem 1rem;background:var(--card);border:2px solid var(--line);border-radius:20px;color:var(--ink);font-size:.9rem}
+textarea{height:84px;resize:vertical}select{width:auto;padding:.4rem .8rem;font-size:.82rem;border-radius:99px}option{background:var(--bg);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+.ws{display:grid;grid-template-columns:320px 1fr;gap:20px;padding:0 20px 20px;height:calc(100vh - 60px)}
+aside{background:var(--card);border:1px solid var(--line);border-radius:44px 20px 44px 20px;backdrop-filter:blur(10px);padding:26px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.st{font-size:12px;font-weight:800;color:var(--acc)}.note{font-size:12px;color:var(--mute);line-height:1.55}.chk{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--mute)}.chk input{width:auto}
+#status{min-height:16px;color:var(--amber)}
+main{display:flex;flex-direction:column;gap:14px;min-width:0;min-height:0;overflow:hidden}.ws>*{min-height:0}
+.sx{display:flex;gap:12px;flex-wrap:wrap}.sx div{background:var(--card);border:1px solid var(--line);border-radius:28px 12px 28px 12px;padding:.5rem 1.3rem;display:flex;flex-direction:column;backdrop-filter:blur(10px)}
+.sx b{font:800 1.8rem/1.2 var(--d);color:var(--acc)}.sx span{font-size:.75rem;color:var(--mute)}
+.vc{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.vc input{width:210px;padding:.45rem 1rem;font-size:.82rem;border-radius:99px}
+.gc{flex:1;min-height:0;background:var(--card);border:1px solid var(--line);border-radius:44px 20px 44px 20px;backdrop-filter:blur(10px);padding:18px;overflow:auto}
+.empty{font-size:14px;color:var(--mute);padding:24px;line-height:1.7;max-width:56ch}
+svg.er{display:block;height:auto}
+.edge{fill:none;stroke:color-mix(in srgb,var(--mute) 45%,transparent);stroke-width:1.5;transition:stroke .2s,opacity .2s}
+.edge.hl{stroke:var(--acc);stroke-width:2.4;stroke-dasharray:6 6;animation:flow 1s linear infinite}.edge.dim{opacity:.15}
+.n{cursor:pointer}.n rect{fill:var(--card);stroke:var(--line);stroke-width:1.5;rx:16px;transition:stroke .2s,filter .2s}
+.n:hover rect{stroke:var(--acc);filter:drop-shadow(0 0 10px var(--acc))}
+.n .t{fill:var(--ink);font-size:13px;font-weight:800}.n .s{fill:var(--mute);font-size:10px}.n .acc{fill:var(--acc);font-size:13px;font-weight:800}
+.n.priv rect{stroke:var(--amber);stroke-dasharray:4 3}.pt{fill:var(--acc-ink);font-size:9px;font-weight:800}
+#tip{position:fixed;z-index:50;max-width:340px;background:var(--bg);border:2px solid var(--acc);border-radius:22px;padding:14px 16px;font-size:12px;line-height:1.55;color:var(--ink);box-shadow:0 14px 40px rgba(0,0,0,.35);pointer-events:none;display:none}
+#tip b{font:800 15px var(--d)}#tip .m{color:var(--mute)}#tip .u{color:var(--acc);word-break:break-all;display:block;font-weight:600}
+.pill{font-size:10px;font-weight:800;padding:1px 8px;border-radius:10px;margin-left:6px;border:1px solid var(--line)}.pill.p{color:var(--amber);border-color:var(--amber)}
+.chip{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0 7px;margin:3px 3px 0 0;font-size:10px}
+@media(max-width:800px){body{overflow:auto;height:auto}.ws{grid-template-columns:1fr;height:auto;padding:0 12px 16px}main{overflow:visible}.gc{flex:none;overflow:visible;min-height:360px;padding:10px}aside{border-radius:28px 16px 28px 16px;padding:20px}#meta{display:none}header{padding:0 12px}}
+[hidden]{display:none!important}
+.sw{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:3px}.sw button{background:none;border:0;color:var(--mute);padding:.35rem .9rem;font-size:.8rem}.sw button:hover{transform:none}.sw button[aria-pressed=true]{background:var(--acc);color:var(--acc-ink)}
+.n.dim{opacity:.22}
+#det{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));z-index:45;background:var(--bg);color:var(--ink);border:2px solid var(--acc);border-radius:28px 12px 28px 12px;padding:14px 18px;font-size:13px;line-height:1.7;box-shadow:0 14px 40px rgba(0,0,0,.35);display:none}
+#det b{font:800 16px var(--d)}#det a{color:var(--acc);font-weight:800;word-break:break-all}#det .m{color:var(--mute)}#det .x{float:right;padding:.2rem .8rem;font-size:.75rem}
+.bar{height:4px;border-radius:4px;background:var(--line);overflow:hidden;display:none}.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
+.empty h2{margin-bottom:.6rem}
+@media(max-width:480px){#stealth{padding:.35rem .7rem}.sw button{padding:.35rem .6rem}.lg{font-size:1.1rem}}
+:root{--field:#fff;--nodebg:rgba(255,255,255,.94)}
+[data-theme=dark]{--field:rgba(10,14,48,.62);--nodebg:rgba(14,20,66,.82)}
+.ws{grid-template-columns:340px 1fr}aside{gap:14px}aside section{display:flex;flex-direction:column;gap:8px}
+.st{font-size:13px;color:var(--ink)}.note{font-size:13px;line-height:1.55;color:var(--mute)}.hint{font-size:12px;line-height:1.5;color:var(--mute)}
+input,select,textarea{background:var(--field);border:1.5px solid var(--line);border-radius:14px;font-size:14px;padding:.7rem .9rem}
+select{border-radius:99px;padding:.4rem .8rem;font-size:.82rem}.vc input{border-radius:99px;padding:.45rem 1rem}
+input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px;padding:0}
+textarea{height:96px;line-height:1.5}.chk{font-size:13px;color:var(--ink)}
+.n rect{fill:var(--nodebg)}.n .t{font-size:14px}.n .s{font-size:11.5px}.n .acc{font-size:14px}
+.edge{stroke:color-mix(in srgb,var(--mute) 60%,transparent)}.sx span{font-size:.8rem}
+.sel{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px}
+#det{position:static;transform:none;width:auto;background:var(--field);border:1.5px solid var(--line);border-radius:16px;box-shadow:none;padding:12px 14px;font-size:13px;line-height:1.7;display:block}
+#det .m{font-size:12.5px}
+@media(max-width:800px){.ws{grid-template-columns:1fr}.sel{border:0;padding:0}.sel .st{display:none}#det{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));background:var(--bg);border:2px solid var(--acc);box-shadow:0 14px 40px rgba(0,0,0,.35);z-index:45}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.acts button{padding:.35rem .9rem;font-size:.78rem}
+.danger{background:transparent;color:var(--red);border-color:var(--red)}.danger:hover{background:var(--red);color:#fff}
+.n.arch rect{stroke-dasharray:2 4;opacity:.7}.n.arch .t{text-decoration:line-through}
+.pill.a{color:var(--mute)}
+</style>
+  <script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+<header><a class="lg" href="#">Surface<i>.Map</i></a><span id="stat" hidden></span><div class="hr"><span id="meta"></span><button class="ib" id="stealth" aria-pressed="false" title="Hide private repos for screenshots">Stealth off</button><div class="sw" role="group" aria-label="Colour theme"><button data-t="light" aria-pressed="true">☀ Light</button><button data-t="dark" aria-pressed="false">☾ Dark</button></div></div></header>
+<div class="ws">
+<aside>
+<h2>Map your code</h2>
+<p class="note">Accounts, repos and live sites as one diagram.</p>
+<section><label class="st" for="users">GitHub accounts</label>
+<textarea id="users" placeholder="&#10;https://github.com/torvalds" aria-label="GitHub usernames or profile URLs"></textarea>
+<p class="hint">Usernames or profile links. Enter to fetch, Shift+Enter for a new line.</p></section>
+<section><label class="chk"><input type="checkbox" id="usetok"> I have a token (for private repos)</label>
+<div id="tokbox" hidden><input type="password" id="pat" placeholder="ghp_… or github_pat_…" autocomplete="off" aria-label="GitHub personal access token"><label class="chk"><input type="checkbox" id="rem"> Keep for this tab only</label><p class="hint">Classic token: <b>repo</b> scope (add <b>delete_repo</b> to delete repos). Fine-grained: Metadata + Contents read (plus Administration write to delete). Sent only to api.github.com and never saved in the cache.</p></div></section>
+<div class="row"><button id="go">Fetch and map</button><button class="ghost" id="demo">Try demo</button></div>
+<div id="status" class="note" role="status"></div><div class="bar" id="bar"><i id="barf"></i></div>
+<div class="row"><button class="ghost" id="exp">Export JSON</button><button class="ghost" id="clr">Clear cache</button></div>
+<div class="sel"><div class="st">Selected repo</div><div id="det"></div></div>
+</aside>
+<main>
+<div class="sx" id="sx"></div><div class="vc">
+<button class="fb on" data-f="all">All repos</button><button class="fb" data-f="deployed">Deployed</button><button class="fb" data-f="private">Private</button><button class="fb" data-f="nofork">No forks</button><button class="ib" id="showarch" aria-pressed="false" title="Show repos you archived (hidden from the diagram)">Archived (0)</button>
+<input type="search" id="q" placeholder="Search repo, language, URL…" aria-label="Search">
+<select id="grp" aria-label="Sort repos by"><option value="account">Group: account</option><option value="language">Group: language</option><option value="host">Group: host</option></select>
+<select id="lay" aria-label="Layout"><option value="auto">Layout: auto</option><option value="h">Layout: wide</option><option value="v">Layout: tall</option></select><button class="ib" id="zi" aria-label="Zoom in">+</button><button class="ib" id="zr" aria-label="Reset zoom">100%</button><button class="ib" id="zo" aria-label="Zoom out">−</button>
+</div>
+<div class="gc" id="gc"></div>
+</main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CK='ghgrid_cache_v1',TH='ghgrid_theme',PK='ghgrid_pat',AK='ghgrid_archived_v1';
+let arch=new Set(),showArch=false;
+try{arch=new Set(JSON.parse(localStorage.getItem(AK)||'[]'))}catch(e){}
+const saveArch=()=>{try{localStorage.setItem(AK,JSON.stringify([...arch]))}catch(e){}};
+const saveCache=()=>{try{localStorage.setItem(CK,JSON.stringify(data))}catch(e){}};
+const visible=r=>!arch.has(r.full)&&(!stealth||!r.priv);
+const HOSTS=[['Streamlit',/streamlit\.app$/,'--red'],['Vercel',/vercel\.app$/,'--text'],['Firebase',/(web\.app|firebaseapp\.com)$/,'--amber'],['GitHub Pages',/github\.io$/,'--purple'],['Netlify',/netlify\.app$/,'--green'],['Render',/onrender\.com$/,'--blue'],['Heroku',/herokuapp\.com$/,'--purple'],['Cloudflare',/(pages|workers)\.dev$/,'--amber'],['Railway',/railway\.app$/,'--blue'],['Fly.io',/fly\.dev$/,'--purple']];
+const URLRE=/https?:\/\/[^\s)"'<>\]]+/g;
+let lay='auto',sel=null,stealth=false,lastSx='',data=null,filter='all',q='',group='account',zoom=1,token='',busy=false,rate='';
+const host=u=>{try{return new URL(u).hostname.toLowerCase()}catch(e){return''}};
+const hinfo=h=>{for(const x of HOSTS)if(x[1].test(h))return{n:x[0],c:x[2]};return{n:'Custom',c:'--muted'}};
+const fit=(s,px,f)=>{const n=Math.max(4,Math.floor(px/(f*.62)));return s.length>n?s.slice(0,n-1)+'…':s};
+const st=m=>{$('status').textContent=m};
+
+/* ---------- GitHub API ---------- */
+async function gh(path,raw){
+  const h={Accept:raw?'application/vnd.github.raw+json':'application/vnd.github+json'};
+  if(token)h.Authorization='Bearer '+token;
+  let r;try{r=await fetch('https://api.github.com'+path,{headers:h})}catch(x){const e=new Error('Browser could not reach api.github.com. Open this file from your computer or your own site (not inside a preview) and pause ad-blockers.');e.status=0;throw e}
+  rate=r.headers.get('x-ratelimit-remaining')||rate;
+  if(!r.ok){
+    if(r.status===404&&raw)return null;
+    const e=new Error(r.status===401?'Token rejected':(r.status===403||r.status===429)?'Rate limited (add a token or wait)':r.status===404?'Not found':'HTTP '+r.status);
+    e.status=r.status;throw e;
+  }
+  return raw?r.text():r.json();
+}
+async function ghDelete(full,tk){
+  let r;try{r=await fetch('https://api.github.com/repos/'+full,{method:'DELETE',headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+tk}})}catch(x){throw new Error('Could not reach api.github.com')}
+  if(r.status===204)return true;
+  throw new Error(r.status===401?'Token rejected':r.status===403?'Token cannot delete this repo (needs delete_repo scope, or Administration: write for fine-grained tokens)':r.status===404?'Not found, or the token has no admin access to it':'HTTP '+r.status);
+}
+async function deleteRepo(full){
+  const r=findRepo(full);if(!r)return;
+  const tk=$('usetok').checked?$('pat').value.trim():'';
+  if(!tk)return st('Tick "I have a token" and paste a token with delete rights first.');
+  if(data.demo)return st('Demo repos cannot be deleted.');
+  const typed=prompt('This PERMANENTLY deletes '+full+' from GitHub (code, issues, stars). It cannot be undone.\n\nType the repo name to confirm:\n'+r.name);
+  if(typed===null)return;
+  if(typed.trim()!==r.name)return st('Delete cancelled: name did not match.');
+  st('Deleting '+full+'…');
+  try{
+    await ghDelete(full,tk);
+    const acct=data.accounts[full.split('/')[0]]||Object.values(data.accounts).find(a=>a.repos.includes(r));
+    if(acct)acct.repos=acct.repos.filter(x=>x.full!==full);
+    arch.delete(full);saveArch();saveCache();
+    if(sel==='r:'+full)sel=null;lastSx='';
+    st('Deleted '+full+' from GitHub.');render();renderDetail();
+  }catch(e){st('Delete failed: '+e.message)}
+}
+function toggleArchive(full){
+  if(arch.has(full))arch.delete(full);else arch.add(full);
+  saveArch();lastSx='';
+  if(arch.has(full)&&!showArch&&sel==='r:'+full)sel=null;
+  render();renderDetail();
+}
+async function pages(path){
+  let out=[];
+  for(let p=1;p<=10;p++){
+    const j=await gh(path+(path.includes('?')?'&':'?')+'per_page=100&page='+p);
+    out=out.concat(j);if(j.length<100)break;
+  }
+  return out;
+}
+async function loadAccount(login,me){
+  const info=await gh('/users/'+encodeURIComponent(login));
+  const l=info.login;
+  const list=me&&me.toLowerCase()===l.toLowerCase()?await pages('/user/repos?affiliation=owner')
+    :info.type==='Organization'?await pages('/orgs/'+l+'/repos?type=all')
+    :await pages('/users/'+l+'/repos?type=owner');
+  return{login:l,type:info.type,repos:list.map(r=>({name:r.name,full:r.full_name,priv:r.private,desc:r.description||'',lang:r.language||'',topics:r.topics||[],stars:r.stargazers_count||0,url:r.html_url,home:r.homepage||'',pages:!!r.has_pages,fork:r.fork,urls:[]}))};
+}
+function extract(r,text){
+  const s=new Set();
+  const add=u=>{u=u.replace(/[.,;:!?)\]*_]+$/,'').replace(/#.*$/,'').replace(/\/$/,'');if(/^https?:\/\//.test(u)&&host(u))s.add(u)};
+  if(r.home)add(/^https?:/i.test(r.home)?r.home:'https://'+r.home);
+  if(r.pages){const o=r.full.split('/')[0].toLowerCase();add(r.name.toLowerCase().endsWith('.github.io')?'https://'+r.name.toLowerCase():'https://'+o+'.github.io/'+r.name)}
+  ((r.desc+' '+text).match(URLRE)||[]).forEach(u=>{if(hinfo(host(u)).n!=='Custom')add(u)});
+  return[...s];
+}
+let limited=false;
+async function enrich(repos,prog){
+  let i=0,done=0;limited=false;
+  const w=async()=>{
+    while(i<repos.length){
+      const r=repos[i++];let t='';
+      if(!limited){try{t=await gh('/repos/'+r.full+'/readme',true)||''}catch(e){if(e.status===403||e.status===429)limited=true}}
+      r.urls=extract(r,t);prog(++done,repos.length);
+    }
+  };
+  await Promise.all([1,2,3,4,5].map(w));
+}
+async function run(){
+  if(busy)return;
+  const names=[...new Set($('users').value.split(/[\s,]+/).map(t=>t.replace(/^https?:\/\/(www\.)?github\.com\//i,'').split(/[\/?#]/)[0]).filter(Boolean))];
+  if(!names.length)return st('Enter at least one username or profile URL.');
+  token=$('usetok').checked?$('pat').value.trim():'';
+  try{$('rem').checked&&token?sessionStorage.setItem(PK,token):sessionStorage.removeItem(PK)}catch(e){}
+  busy=true;$('go').disabled=true;$('bar').style.display='block';$('barf').style.width='0';if(data&&data.demo)data=null;data=data||{accounts:{}};
+  let me=null;const errs=[];
+  if(token){try{me=(await gh('/user')).login}catch(e){errs.push('Token: '+e.message+', continuing with public data only');token=''}}
+  for(const n of names){
+    try{
+      st('Listing repos for '+n+'…');
+      const a=await loadAccount(n,me);
+      await enrich(a.repos,(d,t)=>{st(n+': scanning READMEs '+d+'/'+t);$('barf').style.width=(100*d/t)+'%'});if(limited)errs.push(n+': rate limit hit, some live links may be missing');
+      data.accounts[a.login]=a;
+    }catch(e){errs.push(n+': '+e.message)}
+  }
+  data.fetched=new Date().toISOString();
+  try{localStorage.setItem(CK,JSON.stringify(data))}catch(e){errs.push('Cache not saved (storage full or blocked)')}
+  busy=false;$('go').disabled=false;$('bar').style.display='none';
+  st(errs.length?errs.join(' | '):'Done.');render();
+}
+
+const LC={JavaScript:'#f1e05a',Python:'#3572A5',TypeScript:'#3178c6',HTML:'#e34c26',CSS:'#a77bff',C:'#9a9a9a','C++':'#f34b7d',Java:'#b07219',Go:'#00ADD8',Rust:'#dea584',Shell:'#89e051'};
+const lc=l=>LC[l]||'var(--mute)';
+function stats(){
+  const all=Object.values(data.accounts).flatMap(a=>a.repos).filter(visible),lg={};
+  all.forEach(r=>{if(r.lang)lg[r.lang]=(lg[r.lang]||0)+1});
+  const top=Object.entries(lg).sort((a,b)=>b[1]-a[1])[0];
+  const it=[['Accounts',Object.keys(data.accounts).length],['Repos',all.length],['Live sites',new Set(all.flatMap(r=>r.urls)).size],['Private',stealth?'hidden':all.filter(r=>r.priv).length],['Top language',top?top[0]:'-']];
+  const key=JSON.stringify(it);if(key===lastSx)return;lastSx=key;
+  $('sx').innerHTML=it.map(i=>'<div><b data-n="'+esc(i[1])+'">'+esc(i[1])+'</b><span>'+i[0]+'</span></div>').join('');
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  $('sx').querySelectorAll('b').forEach(b=>{const n=+b.dataset.n;if(!(n>0))return;const t0=performance.now();const f=t=>{const p=Math.min(1,(t-t0)/700);b.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
+}
+function demo(){
+  const R=(a,n,l,u,p,d,s)=>({name:n,full:a+'/'+n,priv:!!p,desc:d||'',lang:l,topics:[],stars:s||0,url:'https://github.com/'+a+'/'+n,home:'',pages:false,fork:false,urls:u?[u]:[]});
+  data={demo:true,fetched:new Date().toISOString(),accounts:{
+    'demo-dev':{login:'demo-dev',type:'User',repos:[R('demo-dev','quiz-master','JavaScript','https://quiz-master.vercel.app',0,'Live quiz night with instant scores',12),R('demo-dev','exam-helper','Python','https://exam-helper.streamlit.app',0,'Turns question papers into answer sheets',31),R('demo-dev','log-guard','Python','',0,'Reads server logs and blocks bad visitors',8),R('demo-dev','portfolio','HTML','https://demo-dev.github.io/portfolio',0,'Personal site',5),R('demo-dev','vault-notes','TypeScript','https://vault-notes.web.app',1,'Private notes app'),R('demo-dev','recon-kit','Python','',1,'Private research tooling')]},
+    'demo-labs':{login:'demo-labs',type:'Organization',repos:[R('demo-labs','status-board','TypeScript','https://status-board.netlify.app',0,'Team status page',19),R('demo-labs','api-core','Go','https://api-core.onrender.com',0,'Backend for the labs apps',14),R('demo-labs','ui-kit','CSS','https://quiz-master.vercel.app',0,'Shared styles',22),R('demo-labs','scanner','C','',0,'Small port scanner',3)]}}};
+  lastSx='';st('Demo data loaded. Fetch real accounts to replace it.');render();
+}
+/* ---------- Render ---------- */
+function view(){
+  if(!data)return null;
+  const accts=Object.values(data.accounts);if(!accts.length)return null;
+  let repos=[];accts.forEach(a=>a.repos.forEach(r=>repos.push(Object.assign({acct:a.login},r))));repos=repos.filter(x=>(!stealth||!x.priv)&&(showArch||!arch.has(x.full)));
+  const s=q.trim().toLowerCase();
+  repos=repos.filter(r=>(filter==='all'||(filter==='deployed'&&r.urls.length)||(filter==='private'&&r.priv)||(filter==='nofork'&&!r.fork))&&(!s||[r.name,r.desc,r.lang,r.acct].concat(r.urls).join(' ').toLowerCase().includes(s)));
+  const hk=r=>r.urls[0]?hinfo(host(r.urls[0])).n:'~';
+  const ai=a=>accts.findIndex(x=>x.login===a);
+  if(group==='language')repos.sort((a,b)=>(a.lang||'~').localeCompare(b.lang||'~')||a.name.localeCompare(b.name));
+  else if(group==='host')repos.sort((a,b)=>hk(a).localeCompare(hk(b))||a.name.localeCompare(b.name));
+  else repos.sort((a,b)=>ai(a.acct)-ai(b.acct)||a.name.localeCompare(b.name));
+  const deps=new Map();
+  repos.forEach(r=>r.urls.forEach(u=>{if(!deps.has(u))deps.set(u,{url:u,h:host(u),repos:[]});deps.get(u).repos.push(r.full)}));
+  return{accts,repos,deps:[...deps.values()]};
+}
+function render(){
+  const gc=$('gc'),v=view();
+  const na=data?Object.values(data.accounts).flatMap(a=>a.repos).filter(r=>arch.has(r.full)).length:0;
+  $('showarch').textContent='Archived ('+na+')';
+  if(!v){$('sx').innerHTML='';lastSx='';$('stat').textContent='0 accounts';$('meta').textContent='';gc.innerHTML='<div class="empty"><h2>Your repos, mapped.</h2>Enter GitHub usernames or profile links on the left and press Enter, or press Try demo to see how it looks.</div>';return}
+  const nr=v.accts.reduce((n,a)=>n+a.repos.filter(r=>!arch.has(r.full)).length,0),nd=new Set(v.accts.flatMap(a=>a.repos.filter(r=>!arch.has(r.full)).flatMap(r=>r.urls))).size;
+  $('stat').textContent=v.accts.length+' accounts | '+nr+' repos | '+nd+' deployments';
+  stats();$('meta').textContent=(data.fetched?'Fetched '+new Date(data.fetched).toLocaleString():'')+(rate?' · API left: '+rate+(+rate<10?' (low)':''):'');
+  if(!v.repos.length){gc.innerHTML='<div class="empty">No repositories match the current filter or search.'+(na&&!showArch?' '+na+' archived repo'+(na===1?' is':'s are')+' hidden. Click "Archived" to see '+(na===1?'it':'them')+'.':'')+'</div>';return}
+  if(lay==='v'||(lay==='auto'&&gc.clientWidth<760)){drawV(v,gc);return}
+  const NH=46,GAP=10,PAD=20,STEP=NH+GAP;
+  const W=Math.max(640,Math.min(1100,(gc.clientWidth||900)-34));
+  const CW=Math.round(Math.min(230,W*.24)),RW=Math.round(Math.min(280,W*.32)),DW=Math.round(Math.min(260,W*.28));
+  const AX=PAD,RX=Math.round((W-RW)/2),DX=W-PAD-DW;
+  const used=v.accts.filter(a=>v.repos.some(r=>r.acct===a.login));
+  const rows=Math.max(v.repos.length,v.deps.length,used.length);
+  const H=PAD*2+rows*STEP-GAP;
+  const cy=(n,i)=>PAD+(rows-n)*STEP/2+i*STEP;
+  const ry={};v.repos.forEach((r,i)=>ry[r.full]=cy(v.repos.length,i));
+  const ay={};
+  used.map(a=>{const ys=v.repos.filter(r=>r.acct===a.login).map(r=>ry[r.full]);return[a.login,ys.reduce((x,y)=>x+y,0)/ys.length]}).sort((a,b)=>a[1]-b[1]).forEach((p,i,arr)=>{ay[p[0]]=Math.max(p[1],i?ay[arr[i-1][0]]+STEP:PAD)});
+  const dy={};v.deps.forEach((d,i)=>dy[d.url]=cy(v.deps.length,i));
+  let edges='',nodes='';
+  const curve=(x1,y1,x2,y2)=>{const m=(x1+x2)/2;return'M'+x1+','+y1+' C'+m+','+y1+' '+m+','+y2+' '+x2+','+y2};
+  v.repos.forEach(r=>{
+    edges+='<path class="edge" data-a="'+esc(r.acct)+'" data-r="'+esc(r.full)+'" d="'+curve(AX+CW,ay[r.acct]+NH/2,RX,ry[r.full]+NH/2)+'"/>';
+    r.urls.forEach(u=>{edges+='<path class="edge" data-r="'+esc(r.full)+'" data-d="'+esc(u)+'" d="'+curve(RX+RW,ry[r.full]+NH/2,DX,dy[u]+NH/2)+'"/>'});
+  });
+  used.forEach(a=>{
+    const n=v.repos.filter(r=>r.acct===a.login).length;
+    nodes+='<g class="n" data-k="a:'+esc(a.login)+'" transform="translate('+AX+','+ay[a.login]+')"><rect width="'+CW+'" height="'+NH+'" rx="8"/><text class="acc" x="14" y="21">'+esc(fit(a.login,CW-28,12))+'</text><text class="s" x="14" y="37">'+esc(a.type)+' · '+n+' repo'+(n===1?'':'s')+'</text></g>';
+  });
+  v.repos.forEach(r=>{
+    const meta=[r.lang||'no language',r.stars?'★ '+r.stars:'',r.fork?'fork':''].filter(Boolean).join(' · ');
+    const badge=r.priv?'<g transform="translate('+(RW-62)+',7)"><rect class="pb" width="50" height="14" rx="4" style="fill:var(--amber);stroke:none"/><text class="pt" x="25" y="10.5" text-anchor="middle">PRIVATE</text></g>':'';
+    nodes+='<g class="n'+(r.priv?' priv':'')+(arch.has(r.full)?' arch':'')+'" data-k="r:'+esc(r.full)+'" transform="translate('+RX+','+ry[r.full]+')"><rect width="'+RW+'" height="'+NH+'" rx="8"/><text class="t" x="14" y="21">'+esc(fit(r.name,RW-(r.priv?90:28),13))+'</text><circle cx="18" cy="34" r="4" style="fill:'+lc(r.lang)+'"/><text class="s" x="28" y="37">'+esc(fit(meta,RW-42,10))+'</text>'+badge+'</g>';
+  });
+  v.deps.forEach(d=>{
+    const hi=hinfo(d.h);
+    nodes+='<a href="'+esc(d.url)+'" target="_blank" rel="noopener noreferrer"><g class="n" data-k="d:'+esc(d.url)+'" transform="translate('+DX+','+dy[d.url]+')"><rect width="'+DW+'" height="'+NH+'" rx="8"/><circle cx="14" cy="22" r="4" style="fill:var('+hi.c+')"/><text class="t" x="26" y="26">'+esc(fit(d.h,DW-40,13))+'</text><text class="s" x="26" y="39">'+esc(hi.n+' · '+d.repos.length+' repo'+(d.repos.length===1?'':'s'))+'</text></g></a>';
+  });
+  gc.innerHTML='<svg class="er" style="width:'+zoom*100+'%" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+edges+nodes+'</svg>';applySel();
+}
+
+function setTheme(t,save){document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;document.querySelectorAll('.sw button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));if(save)try{localStorage.setItem(TH,t)}catch(e){}}
+function findRepo(id){let r=null;Object.values(data.accounts).forEach(a=>a.repos.forEach(x=>{if(x.full===id)r=x}));return r}
+function applySel(){
+  const S=sel?related(sel):null;
+  document.querySelectorAll('.n').forEach(n=>n.classList.toggle('dim',!!S&&!S.has(n.dataset.k)));
+  hl(null);
+}
+function renderDetail(pk){
+  const d=$('det'),key=pk||sel,mob=matchMedia('(max-width:800px)').matches;
+  const none=()=>{d.innerHTML=mob?'':'<div class="m">Hover a repo to preview. Click it to pin its links here.</div>';d.style.display=mob?'none':'block'};
+  if(!key||!data)return none();
+  const t=key[0],id=key.slice(2),A=(u,l)=>u?'<a href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+esc(l||u)+'</a>':'';
+  let h='';
+  if(t==='r'){
+    const r=findRepo(id);if(!r||(stealth&&r.priv)){if(key===sel)sel=null;return none()}
+    h='<b>'+esc(r.full)+'</b><span class="pill'+(r.priv?' p':'')+'">'+(r.priv?'Private':'Public')+'</span><div class="m">'+esc([r.lang||'No language',r.stars?'★ '+r.stars:'',r.fork?'fork':''].filter(Boolean).join(' · '))+'</div>'+(r.desc?'<div>'+esc(r.desc)+'</div>':'')+'<div>'+A(r.url,'Open repo on GitHub')+'</div>'+r.urls.map(u=>'<div>'+A(u)+'</div>').join('')
+      +(arch.has(r.full)?'<div class="m">Archived: hidden from the diagram, still on GitHub.</div>':'')
+      +(key===sel?'<div class="acts"><button class="ghost arc" data-r="'+esc(r.full)+'">'+(arch.has(r.full)?'Restore to diagram':'Archive (hide from diagram)')+'</button>'+(data.demo?'':'<button class="ghost danger del" data-r="'+esc(r.full)+'">Delete from GitHub</button>')+'</div>':'');
+  }else if(t==='a')h='<b>'+esc(id)+'</b><div>'+A('https://github.com/'+encodeURIComponent(id),'Open profile on GitHub')+'</div>';
+  else h='<b>'+esc(host(id))+'</b><div>'+A(id)+'</div>';
+  d.innerHTML=(!pk&&sel?'<button class="ib x">Clear</button>':'')+h;d.style.display='block';
+}
+function drawV(v,gc){
+  const W=Math.max(300,(gc.clientWidth||360)-34),PAD=14,NH=46,DH=34,G=8,IN=28,RW=W-2*PAD-IN;
+  let y=PAD,ed='',nd='';
+  const path=(x1,y1,x2,y2)=>'M'+x1+','+y1+' V'+y2+' H'+x2;
+  v.accts.forEach(a=>{
+    const rs=v.repos.filter(r=>r.acct===a.login);if(!rs.length)return;
+    const ay=y;
+    nd+='<g class="n" data-k="a:'+esc(a.login)+'" transform="translate('+PAD+','+ay+')"><rect width="'+(W-2*PAD)+'" height="40" rx="8"/><text class="acc" x="14" y="25">'+esc(fit(a.login,W-2*PAD-110,13))+'</text><text class="s" x="'+(W-2*PAD-14)+'" y="25" text-anchor="end">'+esc(a.type)+' · '+rs.length+' repos</text></g>';
+    y+=40+G;
+    rs.forEach(r=>{
+      const ry=y,meta=[r.lang||'no language',r.stars?'★ '+r.stars:'',r.fork?'fork':''].filter(Boolean).join(' · ');
+      ed+='<path class="edge" data-a="'+esc(a.login)+'" data-r="'+esc(r.full)+'" d="'+path(PAD+14,ay+40,PAD+IN,ry+NH/2)+'"/>';
+      nd+='<g class="n'+(r.priv?' priv':'')+(arch.has(r.full)?' arch':'')+'" data-k="r:'+esc(r.full)+'" transform="translate('+(PAD+IN)+','+ry+')"><rect width="'+RW+'" height="'+NH+'" rx="8"/><text class="t" x="14" y="21">'+esc(fit(r.name,RW-(r.priv?90:28),13))+'</text><circle cx="18" cy="34" r="4" style="fill:'+lc(r.lang)+'"/><text class="s" x="28" y="37">'+esc(fit(meta,RW-42,10))+'</text>'+(r.priv?'<g transform="translate('+(RW-62)+',7)"><rect style="fill:var(--amber);stroke:none" width="50" height="14" rx="4"/><text class="pt" x="25" y="10.5" text-anchor="middle">PRIVATE</text></g>':'')+'</g>';
+      y+=NH+G;
+      r.urls.forEach(u=>{
+        const hi=hinfo(host(u)),dw=RW-IN;
+        ed+='<path class="edge" data-r="'+esc(r.full)+'" data-d="'+esc(u)+'" d="'+path(PAD+IN+14,ry+NH,PAD+2*IN,y+DH/2)+'"/>';
+        nd+='<a href="'+esc(u)+'" target="_blank" rel="noopener noreferrer"><g class="n" data-k="d:'+esc(u)+'" transform="translate('+(PAD+2*IN)+','+y+')"><rect width="'+dw+'" height="'+DH+'" rx="8"/><circle cx="14" cy="17" r="4" style="fill:var('+hi.c+')"/><text class="t" x="26" y="21">'+esc(fit(host(u),dw-120,12))+'</text><text class="s" x="'+(dw-12)+'" y="21" text-anchor="end">'+esc(hi.n)+'</text></g></a>';
+        y+=DH+G;
+      });
+    });
+    y+=8;
+  });
+  gc.innerHTML='<svg class="er" style="width:'+zoom*100+'%" viewBox="0 0 '+W+' '+(y+PAD)+'" xmlns="http://www.w3.org/2000/svg">'+ed+nd+'</svg>';
+  applySel();
+}
+/* ---------- Hover card ---------- */
+function related(k){
+  const S=new Set([k]);if(!k||!data)return S;
+  const t=k[0],id=k.slice(2);
+  Object.values(data.accounts).forEach(a=>a.repos.forEach(r=>{
+    if((t==='r'&&r.full===id)||(t==='a'&&a.login===id)||(t==='d'&&r.urls.includes(id))){
+      S.add('r:'+r.full);S.add('a:'+a.login);
+      if(t==='d')S.add(k);else r.urls.forEach(u=>S.add('d:'+u));
+    }
+  }));
+  return S;
+}
+function hl(k){
+  const kk=k||sel,S=kk?related(kk):null;
+  document.querySelectorAll('.edge').forEach(e=>{
+    const on=!!S&&S.has('r:'+e.dataset.r)&&(!e.dataset.d||S.has('d:'+e.dataset.d));
+    e.classList.toggle('hl',on);e.classList.toggle('dim',!!S&&!on);
+  });
+}
+let curK='';
+const hideTip=()=>{curK='';hl(null);renderDetail()};
+$('gc').addEventListener('pointermove',e=>{
+  if(e.pointerType==='touch')return;
+  const n=e.target.closest('[data-k]');
+  if(!n){if(curK)hideTip();return}
+  const k=n.dataset.k;
+  if(curK!==k){curK=k;hl(k);renderDetail(k)}
+});
+$('gc').addEventListener('pointerleave',hideTip);$('gc').addEventListener('scroll',hideTip);
+
+/* ---------- Controls ---------- */
+$('go').onclick=run;$('demo').onclick=demo;
+$('usetok').onchange=e=>{$('tokbox').hidden=!e.target.checked;if(!e.target.checked){$('pat').value='';$('rem').checked=false;token='';try{sessionStorage.removeItem(PK)}catch(x){}}};
+$('users').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run()}});
+$('pat').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run()}});
+$('lay').onchange=e=>{lay=e.target.value;render()};
+$('gc').addEventListener('click',e=>{const n=e.target.closest('[data-k]');if(n&&n.dataset.k[0]==='d')return;sel=n?(sel===n.dataset.k?null:n.dataset.k):null;applySel();renderDetail()});
+$('det').addEventListener('click',e=>{
+  const a=e.target.closest('.arc'),d=e.target.closest('.del');
+  if(a)return toggleArchive(a.dataset.r);
+  if(d)return deleteRepo(d.dataset.r);
+  if(e.target.closest('.x')){sel=null;applySel();renderDetail()}
+});
+$('showarch').onclick=e=>{showArch=!showArch;e.currentTarget.setAttribute('aria-pressed',showArch);render()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sel){sel=null;applySel();renderDetail()}});
+$('stealth').onclick=e=>{stealth=!stealth;e.target.setAttribute('aria-pressed',stealth);e.target.textContent='Stealth '+(stealth?'on':'off');lastSx='';render();renderDetail()};
+document.querySelectorAll('.fb').forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll('.fb').forEach(x=>x.classList.toggle('on',x===b));render()});
+let qt;$('q').oninput=e=>{q=e.target.value;clearTimeout(qt);qt=setTimeout(render,120)};
+$('grp').onchange=e=>{group=e.target.value;render()};
+const setZoom=z=>{zoom=Math.min(3,Math.max(.5,Math.round(z*10)/10));$('zr').textContent=Math.round(zoom*100)+'%';render()};
+$('zi').onclick=()=>setZoom(zoom+.1);$('zo').onclick=()=>setZoom(zoom-.1);$('zr').onclick=()=>setZoom(1);
+document.querySelectorAll('.sw button').forEach(b=>b.onclick=()=>setTheme(b.dataset.t,1));
+$('exp').onclick=()=>{
+  if(!data)return st('Nothing to export yet.');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download='github-er-grid-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);st('Exported. The file includes private repo names and is not encrypted.');
+};
+$('clr').onclick=()=>{if(!confirm('Clear all cached accounts?'))return;data=null;try{localStorage.removeItem(CK)}catch(e){}st('Cache cleared.');render()};
+let rz,lw=0;new ResizeObserver(()=>{const w=$('gc').offsetWidth;if(w===lw)return;lw=w;clearTimeout(rz);rz=setTimeout(render,150)}).observe($('gc'));
+
+/* ---------- Init ---------- */
+(function(){
+  let sv=null;try{sv=localStorage.getItem(TH)}catch(e){}const mq=matchMedia('(prefers-color-scheme:dark)');setTheme(sv||(mq.matches?'dark':'light'));mq.onchange=e=>{let x=null;try{x=localStorage.getItem(TH)}catch(z){}if(!x)setTheme(e.matches?'dark':'light')};
+  try{const p=sessionStorage.getItem(PK);if(p){$('pat').value=p;$('rem').checked=true;$('usetok').checked=true;$('tokbox').hidden=false}}catch(e){}
+  try{
+    const c=JSON.parse(localStorage.getItem(CK)||'null');
+    if(c&&c.accounts){data=c;$('users').value=Object.keys(c.accounts).join(', ')}
+  }catch(e){}
+  render();renderDetail();
+  fetch('https://api.github.com/rate_limit').then(r=>r.json()).then(j=>{rate=j.resources.core.remaining;render()}).catch(()=>st('Cannot reach api.github.com from this page. Open the file from your computer or your own site (not inside a preview) and pause ad-blockers. Try demo still works.'));
+})();
+</script>
+</body>
+</html>
