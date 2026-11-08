@@ -80,6 +80,7 @@ textarea{height:96px;line-height:1.5}.chk{font-size:13px;color:var(--ink)}
 .danger{background:transparent;color:var(--red);border-color:var(--red)}.danger:hover{background:var(--red);color:#fff}
 .n.arch rect{stroke-dasharray:2 4;opacity:.7}.n.arch .t{text-decoration:line-through}
 .pill.a{color:var(--mute)}
+.dz{margin-top:8px;display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--red);padding-top:8px}
 </style>
   <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -117,7 +118,7 @@ textarea{height:96px;line-height:1.5}.chk{font-size:13px;color:var(--ink)}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CK='ghgrid_cache_v1',TH='ghgrid_theme',PK='ghgrid_pat',AK='ghgrid_archived_v1';
-let arch=new Set(),showArch=false;
+let arch=new Set(),showArch=false,delArm=null,delOk=false;
 try{arch=new Set(JSON.parse(localStorage.getItem(AK)||'[]'))}catch(e){}
 const saveArch=()=>{try{localStorage.setItem(AK,JSON.stringify([...arch]))}catch(e){}};
 const saveCache=()=>{try{localStorage.setItem(CK,JSON.stringify(data))}catch(e){}};
@@ -146,18 +147,27 @@ async function gh(path,raw){
 async function ghDelete(full,tk){
   let r;try{r=await fetch('https://api.github.com/repos/'+full,{method:'DELETE',headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+tk}})}catch(x){throw new Error('Could not reach api.github.com')}
   if(r.status===204)return true;
-  throw new Error(r.status===401?'Token rejected':r.status===403?'Token cannot delete this repo (needs delete_repo scope, or Administration: write for fine-grained tokens)':r.status===404?'Not found, or the token has no admin access to it':'HTTP '+r.status);
+  let msg='';try{msg=(await r.json()).message||''}catch(x){}
+  throw new Error((r.status===401?'GitHub says the token is invalid, expired or revoked. Paste a fresh token and try again':r.status===403?'Token is valid but not allowed to delete this repo (needs delete_repo scope, or Administration: write for fine-grained tokens)':r.status===404?'Repo not found, or the token has no admin access to it':'HTTP '+r.status)+(msg?' [GitHub: '+msg+']':''));
+}
+async function checkToken(tk){
+  let r;try{r=await fetch('https://api.github.com/user',{headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+tk}})}catch(x){return 'Could not reach api.github.com'}
+  if(r.status===401)return 'Token is invalid, expired or revoked. Create a new one and paste it in the token box (no spaces)';
+  const sc=r.headers.get('x-oauth-scopes');
+  if(sc!==null&&!sc.split(',').map(s=>s.trim()).includes('delete_repo'))return 'Classic token is missing the delete_repo scope (it has: '+(sc||'none')+'). Edit the token on GitHub, tick delete_repo, then try again';
+  return '';
 }
 async function deleteRepo(full){
   const r=findRepo(full);if(!r)return;
   const tk=$('usetok').checked?$('pat').value.trim():'';
   if(!tk)return st('Tick "I have a token" and paste a token with delete rights first.');
   if(data.demo)return st('Demo repos cannot be deleted.');
-  const typed=prompt('This PERMANENTLY deletes '+full+' from GitHub (code, issues, stars). It cannot be undone.\n\nType the repo name to confirm:\n'+r.name);
-  if(typed===null)return;
-  if(typed.trim()!==r.name)return st('Delete cancelled: name did not match.');
+  st('Checking token…');
+  const bad=await checkToken(tk);
+  if(bad){delArm=null;delOk=false;renderDetail();return st('Delete stopped: '+bad+'.')}
   st('Deleting '+full+'…');
   try{
+    delArm=null;delOk=false;
     await ghDelete(full,tk);
     const acct=data.accounts[full.split('/')[0]]||Object.values(data.accounts).find(a=>a.repos.includes(r));
     if(acct)acct.repos=acct.repos.filter(x=>x.full!==full);
@@ -327,7 +337,8 @@ function renderDetail(pk){
     const r=findRepo(id);if(!r||(stealth&&r.priv)){if(key===sel)sel=null;return none()}
     h='<b>'+esc(r.full)+'</b><span class="pill'+(r.priv?' p':'')+'">'+(r.priv?'Private':'Public')+'</span><div class="m">'+esc([r.lang||'No language',r.stars?'★ '+r.stars:'',r.fork?'fork':''].filter(Boolean).join(' · '))+'</div>'+(r.desc?'<div>'+esc(r.desc)+'</div>':'')+'<div>'+A(r.url,'Open repo on GitHub')+'</div>'+r.urls.map(u=>'<div>'+A(u)+'</div>').join('')
       +(arch.has(r.full)?'<div class="m">Archived: hidden from the diagram, still on GitHub.</div>':'')
-      +(key===sel?'<div class="acts"><button class="ghost arc" data-r="'+esc(r.full)+'">'+(arch.has(r.full)?'Restore to diagram':'Archive (hide from diagram)')+'</button>'+(data.demo?'':'<button class="ghost danger del" data-r="'+esc(r.full)+'">Delete from GitHub</button>')+'</div>':'');
+      +(key===sel&&delArm===r.full?'<div class="dz"><div class="m"><b style="font-size:13px">Permanent delete</b><br>This deletes '+esc(r.full)+' from GitHub (code, issues, stars). It cannot be undone.</div><label class="chk"><input type="checkbox" id="delok"'+(delOk?' checked':'')+'> I understand, delete '+esc(r.name)+'</label><div class="acts"><button class="ghost danger delgo" data-r="'+esc(r.full)+'"'+(delOk?'':' disabled')+'>Confirm delete</button><button class="ghost delno">Cancel</button></div></div>'
+      :key===sel?'<div class="acts"><button class="ghost arc" data-r="'+esc(r.full)+'">'+(arch.has(r.full)?'Restore to diagram':'Archive (hide from diagram)')+'</button>'+(data.demo?'':'<button class="ghost danger del" data-r="'+esc(r.full)+'">Delete from GitHub</button>')+'</div>':'');
   }else if(t==='a')h='<b>'+esc(id)+'</b><div>'+A('https://github.com/'+encodeURIComponent(id),'Open profile on GitHub')+'</div>';
   else h='<b>'+esc(host(id))+'</b><div>'+A(id)+'</div>';
   d.innerHTML=(!pk&&sel?'<button class="ib x">Clear</button>':'')+h;d.style.display='block';
@@ -394,13 +405,17 @@ $('usetok').onchange=e=>{$('tokbox').hidden=!e.target.checked;if(!e.target.check
 $('users').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run()}});
 $('pat').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run()}});
 $('lay').onchange=e=>{lay=e.target.value;render()};
-$('gc').addEventListener('click',e=>{const n=e.target.closest('[data-k]');if(n&&n.dataset.k[0]==='d')return;sel=n?(sel===n.dataset.k?null:n.dataset.k):null;applySel();renderDetail()});
+$('gc').addEventListener('click',e=>{delArm=null;delOk=false;const n=e.target.closest('[data-k]');if(n&&n.dataset.k[0]==='d')return;sel=n?(sel===n.dataset.k?null:n.dataset.k):null;applySel();renderDetail()});
 $('det').addEventListener('click',e=>{
   const a=e.target.closest('.arc'),d=e.target.closest('.del');
   if(a)return toggleArchive(a.dataset.r);
-  if(d)return deleteRepo(d.dataset.r);
+  if(d){delArm=d.dataset.r;delOk=false;return renderDetail()}
+  const g=e.target.closest('.delgo');
+  if(g){if(!delOk)return;return deleteRepo(g.dataset.r)}
+  if(e.target.closest('.delno')){delArm=null;delOk=false;return renderDetail()}
   if(e.target.closest('.x')){sel=null;applySel();renderDetail()}
 });
+$('det').addEventListener('change',e=>{if(e.target.id==='delok'){delOk=e.target.checked;const b=$('det').querySelector('.delgo');if(b)b.disabled=!delOk}});
 $('showarch').onclick=e=>{showArch=!showArch;e.currentTarget.setAttribute('aria-pressed',showArch);render()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sel){sel=null;applySel();renderDetail()}});
 $('stealth').onclick=e=>{stealth=!stealth;e.target.setAttribute('aria-pressed',stealth);e.target.textContent='Stealth '+(stealth?'on':'off');lastSx='';render();renderDetail()};
